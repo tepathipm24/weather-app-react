@@ -39,9 +39,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <main className="APP flex h-screen">
+        <main className="APP flex h-screen overflow-hidden">
           <AppSidebar />
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 ">
             <SearchBar city={city} setCity={setCity} />
             <Routes>
               <Route path="/" element={<WeatherDashboard city={city} />} />

@@ -399,16 +399,14 @@ export default function WeatherCard({ city }: WeatherCardProps): React.JSX.Eleme
           display: "flex",
           flexDirection: "column",
           minHeight: 0,
-          px: 4,
+          px: 0,
           pb: 2,
         }}
       >
         {/* Top Section: 4 Quick Summary Cards */}
         <Box
           sx={{
-            flex: "0 0 35%",
-            display: "flex",
-            alignItems: "center",
+            // ใช้เฉพาะเนื้อที่ที่ต้องการ ไม่กิน flex ทั้งหมด
             mb: 2,
           }}
         >
@@ -495,7 +493,7 @@ export default function WeatherCard({ city }: WeatherCardProps): React.JSX.Eleme
         {/* Middle Section: 2 Large Detailed Cards */}
         <Box
           sx={{
-            flex: "0 0 40%",
+            flex: 1, // ขยายเต็มพื้นที่ที่เหลือ
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -508,7 +506,7 @@ export default function WeatherCard({ city }: WeatherCardProps): React.JSX.Eleme
               height: "100%",
               display: "grid",
               gridTemplateColumns:
-                "repeat(auto-fit, minmax(min(400px, 100%), 1fr))",
+                "repeat(auto-fit, minmax(min(700px, 100%), 1fr))",
               gap: 2,
               padding: 0,
             }}
@@ -570,102 +568,6 @@ export default function WeatherCard({ city }: WeatherCardProps): React.JSX.Eleme
               </AnimatedCard>
             ))}
           </Box>
-        </Box>
-
-        {/* Bottom Section: Additional Weather Info */}
-        <Box
-          sx={{
-            flex: "0 0 25%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AnimatedCard
-            sx={{
-              width: "100%",
-              height: "100%",
-              minHeight: 120,
-              animation: "fadeInUp 0.6s ease-out forwards",
-              animationDelay: "0.6s",
-              opacity: 0,
-            }}
-          >
-            <CardContent
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 3,
-                textAlign: "center",
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  mb: 2,
-                }}
-              >
-                <InfoIcon sx={{ fontSize: 28, color: "primary.main" }} />
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 600, color: "primary.main" }}
-                >
-                  รายละเอียดเพิ่มเติม
-                </Typography>
-              </Box>
-              
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-                  gap: 2,
-                  width: "100%",
-                  maxWidth: 600,
-                }}
-              >
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    ความกดอากาศ
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {weatherData.current.pressure_mb} mb
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    ทัศนวิสัย
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {weatherData.current.vis_km} km
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    ดัชนี UV
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {weatherData.current.uv}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    เมฆ
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {weatherData.current.cloud}%
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </AnimatedCard>
         </Box>
 
       </Box>
