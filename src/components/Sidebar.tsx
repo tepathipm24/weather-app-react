@@ -128,11 +128,11 @@ export default function Sidebar({ children }: SidebarProps) {
           }}
         >
           <div className={`flex items-center ${!expanded ? 'justify-center' : ''}`}>
-            <img 
-              src={avatar} 
-              alt="User Avatar" 
+            <img
+              src={avatar}
+              alt="User Avatar"
               className="w-10 h-10 rounded-md object-cover ring-2 ring-opacity-20"
-              style={{ ringColor: colors.primary }}
+              style={{ '--tw-ring-color': colors.primary } as React.CSSProperties}
             />
             <div
               className={`

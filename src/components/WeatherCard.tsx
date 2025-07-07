@@ -4,12 +4,10 @@ import { useState, useEffect, useMemo } from "react";
 // MUI Components
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import CardActionArea from "@mui/material/CardActionArea";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import { styled, alpha } from "@mui/material/styles";
 
@@ -20,7 +18,6 @@ import OpacityIcon from "@mui/icons-material/Opacity";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import InfoIcon from "@mui/icons-material/Info";
 
 import { getCurrentWeather } from "../services/weatherService";
 import type { WeatherApiResponse } from "../types/weatherTypes";

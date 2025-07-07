@@ -6,7 +6,6 @@ import { useThemeContext } from "./ThemeContext";
 // MUI Components
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import MuiLink from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
@@ -19,7 +18,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { getCurrentWeather } from "../services/weatherService";
 
 // Interfaces สำหรับ Type ของข้อมูล
 interface BreadcrumbItem {

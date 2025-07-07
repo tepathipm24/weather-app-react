@@ -106,7 +106,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             active: mode === 'light' ? '#6b7280' : '#9ca3af',
             hover: mode === 'light' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.08)',
             selected: mode === 'light' ? 'rgba(99, 102, 241, 0.08)' : 'rgba(129, 140, 248, 0.16)',
-            selectedHover: mode === 'light' ? 'rgba(99, 102, 241, 0.12)' : 'rgba(129, 140, 248, 0.24)',
           },
         },
         components: {
