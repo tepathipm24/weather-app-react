@@ -42,7 +42,7 @@ export default function App() {
         <main className="APP flex h-screen overflow-hidden">
           <AppSidebar />
           <div className="flex-1 ">
-            <SearchBar city={city} setCity={setCity} />
+            <SearchBar setCity={setCity} />
             <Routes>
               <Route path="/" element={<WeatherDashboard city={city} />} />
               <Route path="/temperature" element={<TemperatureUpdates city={city} />} />

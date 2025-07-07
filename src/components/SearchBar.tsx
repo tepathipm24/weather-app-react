@@ -63,15 +63,14 @@ const SearchInput = styled(TextField)(({ theme }) => ({
 }));
 
 interface SearchBarProps {
-  city: string;
   setCity: (city: string) => void;
 }
 
-function SearchBar({ city, setCity }: SearchBarProps) {
+function SearchBar({ setCity }: SearchBarProps) {
   const location = useLocation();
   const { mode, toggleColorMode } = useThemeContext();
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [notificationCount, setNotificationCount] = useState<number>(5);
+  const [notificationCount] = useState<number>(5);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchTerm.trim() !== "") {
