@@ -4,6 +4,7 @@ import logoBlack from "../assets/logo-x-black.png";
 import logoWhite from "../assets/logo-x-white.png";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useThemeContext } from "./ThemeContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import type { ReactNode } from "react";
 
 interface SidebarContextType {
@@ -17,6 +18,8 @@ interface SidebarProps {
 
 export default function Sidebar({ children }: SidebarProps) {
   const { mode, colors } = useThemeContext();
+  const { isMobile, isTablet } = useBreakpoint();
+  
   const [expanded, setExpanded] = useState(() => {
     const storedExpanded = localStorage.getItem('sidebarExpanded');
     return storedExpanded ? JSON.parse(storedExpanded) : true;
@@ -25,6 +28,9 @@ export default function Sidebar({ children }: SidebarProps) {
   useEffect(() => {
     localStorage.setItem('sidebarExpanded', JSON.stringify(expanded));
   }, [expanded]);
+
+  // Force expanded state on mobile/tablet when in drawer
+  const isExpanded = isMobile || isTablet ? true : expanded;
 
   // Dynamic styles based on theme
   const sidebarStyle = {
@@ -36,13 +42,22 @@ export default function Sidebar({ children }: SidebarProps) {
   const logoSrc = mode === 'dark' ? logoWhite : logoBlack;
 
   return (
-    <aside 
-      className={`h-screen border-r shadow-sm transition-all duration-300 ${expanded ? "w-64" : "w-20"}`}
-      style={sidebarStyle}
+    <aside
+      className={`h-screen border-r shadow-sm transition-all duration-300 ${
+        isMobile || isTablet
+          ? "w-full"
+          : isExpanded
+            ? "w-64"
+            : "w-20"
+      }`}
+      style={{
+        ...sidebarStyle,
+        minWidth: isMobile || isTablet ? 'auto' : isExpanded ? '256px' : '80px',
+      }}
     >
       <nav className="h-full flex flex-col w-full">
         {/* Header Section: Logo and AtmosphereX Text */}
-        <div className={`p-4 pb-2 flex items-center ${expanded ? "justify-start" : "justify-center"}`}>
+        <div className={`p-4 pb-2 flex items-center ${isExpanded ? "justify-start" : "justify-center"}`}>
           {/* Logo container with hover effect */}
           <div className="relative group p-1 rounded-md transition-all duration-300 hover:bg-opacity-10"
                style={{ 
@@ -61,7 +76,7 @@ export default function Sidebar({ children }: SidebarProps) {
               className={`
               text-2xl font-bold relative group
               overflow-hidden transition-all duration-300
-              ${expanded ? "w-auto opacity-100 block" : "w-0 opacity-0 hidden"} 
+              ${isExpanded ? "w-auto opacity-100 block" : "w-0 opacity-0 hidden"}
                 `}
             style={{ color: colors.text }}
             >
@@ -86,36 +101,38 @@ export default function Sidebar({ children }: SidebarProps) {
         </div>
 
         {/* Sidebar Items Section */}
-        <SidebarContext.Provider value={{ expanded }}>
+        <SidebarContext.Provider value={{ expanded: isExpanded }}>
           <ul className="flex-1 px-3 pt-3">{children}</ul>
           
-          {/* ปุ่มสำหรับสลับสถานะ Sidebar */}
-          <div className="flex justify-center mb-3">
-            <button
-              onClick={() => setExpanded((curr: boolean) => !curr)}
-              className="p-1.5 rounded-lg transition-all duration-300 ease-in-out hover:scale-105"
-              style={{
-                backgroundColor: expanded 
-                  ? mode === 'light' 
-                    ? `${colors.primary}20` 
-                    : `${colors.primary}30`
-                  : mode === 'light' 
-                    ? 'rgba(0, 0, 0, 0.05)' 
-                    : 'rgba(255, 255, 255, 0.05)',
-                color: expanded ? colors.primary : colors.text,
-                boxShadow: expanded 
-                  ? mode === 'light' 
-                    ? '0 2px 4px rgba(0, 0, 0, 0.1)' 
-                    : '0 2px 4px rgba(0, 0, 0, 0.3)'
-                  : 'none',
-              }}
-            >
-              <ChevronFirst 
-                className={`transition-transform duration-300 ${expanded ? '' : 'rotate-180'}`} 
-                size={20}
-              />
-            </button>
-          </div>
+          {/* Toggle button - only show on desktop */}
+          {!isMobile && !isTablet && (
+            <div className="flex justify-center mb-3">
+              <button
+                onClick={() => setExpanded((curr: boolean) => !curr)}
+                className="p-1.5 rounded-lg transition-all duration-300 ease-in-out hover:scale-105"
+                style={{
+                  backgroundColor: expanded
+                    ? mode === 'light'
+                      ? `${colors.primary}20`
+                      : `${colors.primary}30`
+                    : mode === 'light'
+                      ? 'rgba(0, 0, 0, 0.05)'
+                      : 'rgba(255, 255, 255, 0.05)',
+                  color: expanded ? colors.primary : colors.text,
+                  boxShadow: expanded
+                    ? mode === 'light'
+                      ? '0 2px 4px rgba(0, 0, 0, 0.1)'
+                      : '0 2px 4px rgba(0, 0, 0, 0.3)'
+                    : 'none',
+                }}
+              >
+                <ChevronFirst
+                  className={`transition-transform duration-300 ${expanded ? '' : 'rotate-180'}`}
+                  size={20}
+                />
+              </button>
+            </div>
+          )}
         </SidebarContext.Provider>
 
         {/* Footer Section: User Profile */}
@@ -127,7 +144,7 @@ export default function Sidebar({ children }: SidebarProps) {
             borderTopStyle: 'solid'
           }}
         >
-          <div className={`flex items-center ${!expanded ? 'justify-center' : ''}`}>
+          <div className={`flex items-center ${!isExpanded ? 'justify-center' : ''}`}>
             <img
               src={avatar}
               alt="User Avatar"
@@ -138,7 +155,7 @@ export default function Sidebar({ children }: SidebarProps) {
               className={`
                 flex justify-between items-center
                 overflow-hidden transition-all duration-300
-                ${expanded ? "w-52 ml-3" : "w-0 ml-0"}
+                ${isExpanded ? "w-52 ml-3" : "w-0 ml-0"}
               `}
             >
               <div className="leading-4">
@@ -175,6 +192,7 @@ interface SidebarItemProps {
 export function SidebarItem({ icon, text, active = false, alert = false, onClick }: SidebarItemProps) {
   const { expanded } = useContext(SidebarContext);
   const { mode, colors } = useThemeContext();
+  const { isMobile, isTablet } = useBreakpoint();
 
   const itemStyle = {
     backgroundColor: active 
@@ -197,9 +215,10 @@ export function SidebarItem({ icon, text, active = false, alert = false, onClick
       className={`
             relative flex items-center py-2 px-3 my-1
             font-medium rounded-md cursor-pointer
-        transition-all duration-300 group 
+        transition-all duration-300 group
             ${!expanded ? 'justify-center' : ''}
         hover:scale-[1.02]
+        ${isMobile || isTablet ? 'py-3' : 'py-2'}
         `}
       style={itemStyle}
       onMouseEnter={(e) => {
@@ -236,7 +255,7 @@ export function SidebarItem({ icon, text, active = false, alert = false, onClick
           style={{ backgroundColor: colors.accent }}
         />
       )}
-      {!expanded && (
+      {!expanded && !isMobile && !isTablet && (
         <div
           className="
                     absolute left-full rounded-md px-2 py-1 ml-6
@@ -247,7 +266,7 @@ export function SidebarItem({ icon, text, active = false, alert = false, onClick
                     whitespace-nowrap
             shadow-lg
                 "
-          style={{ 
+          style={{
             backgroundColor: colors.surface,
             color: colors.text,
             border: `1px solid ${mode === 'light' ? '#e5e7eb' : '#374151'}`,
