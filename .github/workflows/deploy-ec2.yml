@@ -25,13 +25,14 @@ jobs:
 
     - name: Deploy with Docker Compose
       run: |
-        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+        ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
+          mkdir -p ${{ secrets.EC2_TARGET_DIR }}
           cd ${{ secrets.EC2_TARGET_DIR }}
 
           git init
           git remote add origin https://github.com/tepathipm24/weather-app-react.git
-          git pull origin main # หรือ branch ที่คุณต้องการ deploy
-
+          git pull origin main 
+          
           docker-compose down 
           docker-compose up -d --build
         "
