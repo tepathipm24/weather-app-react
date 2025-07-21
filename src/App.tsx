@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
-import WeatherCard from './components/WeatherCard';
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import './App.css';
 import { LayoutDashboard, Thermometer, Wind, Droplet, Bell, BellOff } from 'lucide-react';
 import Sidebar, { SidebarItem } from './components/Sidebar';
@@ -9,18 +8,59 @@ import { ThemeProvider } from './components/ThemeContext';
 import { useBreakpoint } from './hooks/useBreakpoint';
 import { useMobileMenu } from './hooks/useMobileMenu';
 import ResponsiveDrawer from './components/ResponsiveDrawer';
+import { Box, CircularProgress } from '@mui/material';
+
+// Lazy load components for better performance
+const WeatherCard = lazy(() => import('./components/WeatherCard'));
+const TempCard = lazy(() => import('./components/TempCard'));
+const WindCard = lazy(() => import('./components/WindCard'));
+const HumidityCard = lazy(() => import('./components/HumidityCard'));
+
+// Loading component
+const LoadingSpinner = () => (
+  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+    <CircularProgress size={60} thickness={4} />
+  </Box>
+);
 
 function WeatherDashboard({ city }: { city: string }) {
-  return <div className="px-6 h-full"><WeatherCard city={city} /></div>;
+  return (
+    <div className="px-6 h-full">
+      <Suspense fallback={<LoadingSpinner />}>
+        <WeatherCard city={city} />
+      </Suspense>
+    </div>
+  );
 }
+
 function TemperatureUpdates({ city }: { city: string }) {
-  return <div className="px-6 h-full"><WeatherCard city={city} /></div>;
+  return (
+    <div className="px-6 h-full">
+      <Suspense fallback={<LoadingSpinner />}>
+        <TempCard city={city} />
+      </Suspense>
+    </div>
+  );
 }
+
 function WindSpeed({ city }: { city: string }) {
-  return <div className="px-6 h-full"><WeatherCard city={city} /></div>;
+  return (
+    <div className="px-6 h-full">
+      <Suspense fallback={<LoadingSpinner />}>
+        <WindCard city={city} />
+      </Suspense>
+    </div>
+  );
 }
+
 function HumidityLevels({ city }: { city: string }) {
-  return <div className="px-6 h-full"><WeatherCard city={city} /></div>;
+  return (
+    <div className="px-6 h-full">
+      <Suspense fallback={<LoadingSpinner />}>
+        <HumidityCard city={city} />
+      </Suspense>
+    </div>
+  );
 }
 
 function AppSidebar() {
