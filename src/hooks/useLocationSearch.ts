@@ -54,14 +54,16 @@ export const useLocationSearch = (debounceMs: number = 300): UseLocationSearchRe
   };
 };
 
-// Debounce utility function
+// Optimized debounce utility function
 function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: number;
+  let timeout: number | undefined;
   return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
+    if (timeout !== undefined) {
+      clearTimeout(timeout);
+    }
     timeout = window.setTimeout(() => func(...args), wait);
   };
 }

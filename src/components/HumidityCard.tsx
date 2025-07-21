@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Card, Typography, CircularProgress, Alert, Chip, LinearProgress } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import OpacityIcon from '@mui/icons-material/Opacity';
-import WaterDropIcon from '@mui/icons-material/WaterDrop';
-import ThermostatIcon from '@mui/icons-material/Thermostat';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { getHumidityData, type HumidityData } from '../services/weatherService';
 
@@ -82,7 +80,7 @@ interface HumidityCardProps {
 }
 
 const HumidityCard: React.FC<HumidityCardProps> = ({ city }) => {
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
   const [humidityData, setHumidityData] = useState<HumidityData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,10 +106,9 @@ const HumidityCard: React.FC<HumidityCardProps> = ({ city }) => {
 
   const chartData = useMemo(() => {
     if (!humidityData) return [];
-    return humidityData.hourlyForecast.map((item, index) => ({
+    return humidityData.hourlyForecast.map((item) => ({
       time: item.time,
       humidity: item.humidity,
-      index,
     }));
   }, [humidityData]);
 
@@ -122,12 +119,6 @@ const HumidityCard: React.FC<HumidityCardProps> = ({ city }) => {
     return "#2196f3";
   };
 
-  const getHumidityLevel = (humidity: number): string => {
-    if (humidity < 30) return "แห้ง";
-    if (humidity < 50) return "ปกติ";
-    if (humidity < 70) return "ชื้น";
-    return "ชื้นมาก";
-  };
 
   const getHumidityDescription = (humidity: number): string => {
     if (humidity < 30) return "อากาศแห้ง อาจทำให้ผิวหนังและเยื่อบุจมูกแห้ง";
@@ -136,13 +127,6 @@ const HumidityCard: React.FC<HumidityCardProps> = ({ city }) => {
     return "อากาศชื้นมาก อาจรู้สึกอึดอัดและเหนียวเหนอะหนะ";
   };
 
-  const pieData = useMemo(() => {
-    if (!humidityData) return [];
-    return [
-      { name: 'ความชื้น', value: humidityData.current, fill: getHumidityColor(humidityData.current) },
-      { name: 'แห้ง', value: 100 - humidityData.current, fill: '#e0e0e0' },
-    ];
-  }, [humidityData]);
 
   if (loading) {
     return (
@@ -279,9 +263,9 @@ const HumidityCard: React.FC<HumidityCardProps> = ({ city }) => {
                   tick={{ fontSize: isMobile ? 10 : 12 }}
                   domain={[0, 100]}
                 />
-                <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    `${value}%`, 
+                <Tooltip
+                  formatter={(value: number) => [
+                    `${value}%`,
                     'ความชื้น'
                   ]}
                   labelFormatter={(label: string) => `เวลา: ${label}`}

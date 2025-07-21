@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, memo, useCallback } from "react";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -79,7 +79,9 @@ interface IconWrapperProps {
   color?: string;
 }
 
-const IconWrapper = styled(Box)<IconWrapperProps & { isMobile?: boolean }>(({ theme, color, isMobile }) => ({
+const IconWrapper = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isMobile',
+})<IconWrapperProps & { isMobile?: boolean }>(({ theme, color, isMobile }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -127,323 +129,61 @@ const getHumidityLevel = (humidity: number): string => {
   return "ชื้นมาก";
 };
 
-// Comprehensive country mapping for all countries supported by Weather API
-const COUNTRY_MAPPINGS: { [key: string]: { code: string; flag: string } } = {
-  // Asia
-  'Afghanistan': { code: 'AF', flag: '🇦🇫' },
-  'Armenia': { code: 'AM', flag: '🇦🇲' },
-  'Azerbaijan': { code: 'AZ', flag: '🇦🇿' },
-  'Bahrain': { code: 'BH', flag: '🇧🇭' },
-  'Bangladesh': { code: 'BD', flag: '🇧🇩' },
-  'Bhutan': { code: 'BT', flag: '🇧🇹' },
-  'Brunei': { code: 'BN', flag: '🇧🇳' },
-  'Cambodia': { code: 'KH', flag: '🇰🇭' },
-  'China': { code: 'CN', flag: '🇨🇳' },
-  'Cyprus': { code: 'CY', flag: '🇨🇾' },
-  'Georgia': { code: 'GE', flag: '🇬🇪' },
-  'India': { code: 'IN', flag: '🇮🇳' },
-  'Indonesia': { code: 'ID', flag: '🇮🇩' },
-  'Iran': { code: 'IR', flag: '🇮🇷' },
-  'Iraq': { code: 'IQ', flag: '🇮🇶' },
-  'Israel': { code: 'IL', flag: '🇮🇱' },
-  'Japan': { code: 'JP', flag: '🇯🇵' },
-  'Jordan': { code: 'JO', flag: '🇯🇴' },
-  'Kazakhstan': { code: 'KZ', flag: '🇰🇿' },
-  'Kuwait': { code: 'KW', flag: '🇰🇼' },
-  'Kyrgyzstan': { code: 'KG', flag: '🇰🇬' },
-  'Laos': { code: 'LA', flag: '🇱🇦' },
-  'Lebanon': { code: 'LB', flag: '🇱🇧' },
-  'Malaysia': { code: 'MY', flag: '🇲🇾' },
-  'Maldives': { code: 'MV', flag: '🇲🇻' },
-  'Mongolia': { code: 'MN', flag: '🇲🇳' },
-  'Myanmar': { code: 'MM', flag: '🇲🇲' },
-  'Nepal': { code: 'NP', flag: '🇳🇵' },
-  'North Korea': { code: 'KP', flag: '🇰🇵' },
-  'Oman': { code: 'OM', flag: '🇴🇲' },
-  'Pakistan': { code: 'PK', flag: '🇵🇰' },
-  'Palestine': { code: 'PS', flag: '🇵🇸' },
-  'Philippines': { code: 'PH', flag: '🇵🇭' },
-  'Qatar': { code: 'QA', flag: '🇶🇦' },
-  'Saudi Arabia': { code: 'SA', flag: '🇸🇦' },
-  'Singapore': { code: 'SG', flag: '🇸🇬' },
-  'South Korea': { code: 'KR', flag: '🇰🇷' },
-  'Sri Lanka': { code: 'LK', flag: '🇱🇰' },
-  'Syria': { code: 'SY', flag: '🇸🇾' },
-  'Taiwan': { code: 'TW', flag: '🇹🇼' },
-  'Tajikistan': { code: 'TJ', flag: '🇹🇯' },
-  'Thailand': { code: 'TH', flag: '🇹🇭' },
-  'Timor-Leste': { code: 'TL', flag: '🇹🇱' },
-  'Turkey': { code: 'TR', flag: '🇹🇷' },
-  'Turkmenistan': { code: 'TM', flag: '🇹🇲' },
-  'United Arab Emirates': { code: 'AE', flag: '🇦🇪' },
-  'Uzbekistan': { code: 'UZ', flag: '🇺🇿' },
-  'Vietnam': { code: 'VN', flag: '🇻🇳' },
-  'Yemen': { code: 'YE', flag: '🇾🇪' },
-
-  // Europe
-  'Albania': { code: 'AL', flag: '🇦🇱' },
-  'Andorra': { code: 'AD', flag: '🇦🇩' },
-  'Austria': { code: 'AT', flag: '🇦🇹' },
-  'Belarus': { code: 'BY', flag: '🇧🇾' },
-  'Belgium': { code: 'BE', flag: '🇧🇪' },
-  'Bosnia and Herzegovina': { code: 'BA', flag: '🇧🇦' },
-  'Bulgaria': { code: 'BG', flag: '🇧🇬' },
-  'Croatia': { code: 'HR', flag: '🇭🇷' },
-  'Czech Republic': { code: 'CZ', flag: '🇨🇿' },
-  'Denmark': { code: 'DK', flag: '🇩🇰' },
-  'Estonia': { code: 'EE', flag: '🇪🇪' },
-  'Finland': { code: 'FI', flag: '🇫🇮' },
-  'France': { code: 'FR', flag: '🇫🇷' },
-  'Germany': { code: 'DE', flag: '🇩🇪' },
-  'Greece': { code: 'GR', flag: '🇬🇷' },
-  'Hungary': { code: 'HU', flag: '🇭🇺' },
-  'Iceland': { code: 'IS', flag: '🇮🇸' },
-  'Ireland': { code: 'IE', flag: '🇮🇪' },
-  'Italy': { code: 'IT', flag: '🇮🇹' },
-  'Latvia': { code: 'LV', flag: '🇱🇻' },
-  'Liechtenstein': { code: 'LI', flag: '🇱🇮' },
-  'Lithuania': { code: 'LT', flag: '🇱🇹' },
-  'Luxembourg': { code: 'LU', flag: '🇱🇺' },
-  'Malta': { code: 'MT', flag: '🇲🇹' },
-  'Moldova': { code: 'MD', flag: '🇲🇩' },
-  'Monaco': { code: 'MC', flag: '🇲🇨' },
-  'Montenegro': { code: 'ME', flag: '🇲🇪' },
-  'Netherlands': { code: 'NL', flag: '🇳🇱' },
-  'North Macedonia': { code: 'MK', flag: '🇲🇰' },
-  'Norway': { code: 'NO', flag: '🇳🇴' },
-  'Poland': { code: 'PL', flag: '🇵🇱' },
-  'Portugal': { code: 'PT', flag: '🇵🇹' },
-  'Romania': { code: 'RO', flag: '🇷🇴' },
-  'Russia': { code: 'RU', flag: '🇷🇺' },
-  'San Marino': { code: 'SM', flag: '🇸🇲' },
-  'Serbia': { code: 'RS', flag: '🇷🇸' },
-  'Slovakia': { code: 'SK', flag: '🇸🇰' },
-  'Slovenia': { code: 'SI', flag: '🇸🇮' },
-  'Spain': { code: 'ES', flag: '🇪🇸' },
-  'Sweden': { code: 'SE', flag: '🇸🇪' },
-  'Switzerland': { code: 'CH', flag: '🇨🇭' },
-  'Ukraine': { code: 'UA', flag: '🇺🇦' },
-  'United Kingdom': { code: 'GB', flag: '🇬🇧' },
-  'Vatican City': { code: 'VA', flag: '🇻🇦' },
-
-  // North America
-  'Antigua and Barbuda': { code: 'AG', flag: '🇦🇬' },
-  'Bahamas': { code: 'BS', flag: '🇧🇸' },
-  'Barbados': { code: 'BB', flag: '🇧🇧' },
-  'Belize': { code: 'BZ', flag: '🇧🇿' },
-  'Canada': { code: 'CA', flag: '🇨🇦' },
-  'Costa Rica': { code: 'CR', flag: '🇨🇷' },
-  'Cuba': { code: 'CU', flag: '🇨🇺' },
-  'Dominica': { code: 'DM', flag: '🇩🇲' },
-  'Dominican Republic': { code: 'DO', flag: '🇩🇴' },
-  'El Salvador': { code: 'SV', flag: '🇸🇻' },
-  'Grenada': { code: 'GD', flag: '🇬🇩' },
-  'Guatemala': { code: 'GT', flag: '🇬🇹' },
-  'Haiti': { code: 'HT', flag: '🇭🇹' },
-  'Honduras': { code: 'HN', flag: '🇭🇳' },
-  'Jamaica': { code: 'JM', flag: '🇯🇲' },
-  'Mexico': { code: 'MX', flag: '🇲🇽' },
-  'Nicaragua': { code: 'NI', flag: '🇳🇮' },
-  'Panama': { code: 'PA', flag: '🇵🇦' },
-  'Saint Kitts and Nevis': { code: 'KN', flag: '🇰🇳' },
-  'Saint Lucia': { code: 'LC', flag: '🇱🇨' },
-  'Saint Vincent and the Grenadines': { code: 'VC', flag: '🇻🇨' },
-  'Trinidad and Tobago': { code: 'TT', flag: '🇹🇹' },
-  'United States': { code: 'US', flag: '🇺🇸' },
-
-  // South America
-  'Argentina': { code: 'AR', flag: '🇦🇷' },
-  'Bolivia': { code: 'BO', flag: '🇧🇴' },
-  'Brazil': { code: 'BR', flag: '🇧🇷' },
-  'Chile': { code: 'CL', flag: '🇨🇱' },
-  'Colombia': { code: 'CO', flag: '🇨🇴' },
-  'Ecuador': { code: 'EC', flag: '🇪🇨' },
-  'Guyana': { code: 'GY', flag: '🇬🇾' },
-  'Paraguay': { code: 'PY', flag: '🇵🇾' },
-  'Peru': { code: 'PE', flag: '🇵🇪' },
-  'Suriname': { code: 'SR', flag: '🇸🇷' },
-  'Uruguay': { code: 'UY', flag: '🇺🇾' },
-  'Venezuela': { code: 'VE', flag: '🇻🇪' },
-
-  // Africa
-  'Algeria': { code: 'DZ', flag: '🇩🇿' },
-  'Angola': { code: 'AO', flag: '🇦🇴' },
-  'Benin': { code: 'BJ', flag: '🇧🇯' },
-  'Botswana': { code: 'BW', flag: '🇧🇼' },
-  'Burkina Faso': { code: 'BF', flag: '🇧🇫' },
-  'Burundi': { code: 'BI', flag: '🇧🇮' },
-  'Cameroon': { code: 'CM', flag: '🇨🇲' },
-  'Cape Verde': { code: 'CV', flag: '🇨🇻' },
-  'Central African Republic': { code: 'CF', flag: '🇨🇫' },
-  'Chad': { code: 'TD', flag: '🇹🇩' },
-  'Comoros': { code: 'KM', flag: '🇰🇲' },
-  'Congo': { code: 'CG', flag: '🇨🇬' },
-  'Democratic Republic of the Congo': { code: 'CD', flag: '🇨🇩' },
-  'Djibouti': { code: 'DJ', flag: '🇩🇯' },
-  'Egypt': { code: 'EG', flag: '🇪🇬' },
-  'Equatorial Guinea': { code: 'GQ', flag: '🇬🇶' },
-  'Eritrea': { code: 'ER', flag: '🇪🇷' },
-  'Eswatini': { code: 'SZ', flag: '🇸🇿' },
-  'Ethiopia': { code: 'ET', flag: '🇪🇹' },
-  'Gabon': { code: 'GA', flag: '🇬🇦' },
-  'Gambia': { code: 'GM', flag: '🇬🇲' },
-  'Ghana': { code: 'GH', flag: '🇬🇭' },
-  'Guinea': { code: 'GN', flag: '🇬🇳' },
-  'Guinea-Bissau': { code: 'GW', flag: '🇬🇼' },
-  'Ivory Coast': { code: 'CI', flag: '🇨🇮' },
-  'Kenya': { code: 'KE', flag: '🇰🇪' },
-  'Lesotho': { code: 'LS', flag: '🇱🇸' },
-  'Liberia': { code: 'LR', flag: '🇱🇷' },
-  'Libya': { code: 'LY', flag: '🇱🇾' },
-  'Madagascar': { code: 'MG', flag: '🇲🇬' },
-  'Malawi': { code: 'MW', flag: '🇲🇼' },
-  'Mali': { code: 'ML', flag: '🇲🇱' },
-  'Mauritania': { code: 'MR', flag: '🇲🇷' },
-  'Mauritius': { code: 'MU', flag: '🇲🇺' },
-  'Morocco': { code: 'MA', flag: '🇲🇦' },
-  'Mozambique': { code: 'MZ', flag: '🇲🇿' },
-  'Namibia': { code: 'NA', flag: '🇳🇦' },
-  'Niger': { code: 'NE', flag: '🇳🇪' },
-  'Nigeria': { code: 'NG', flag: '🇳🇬' },
-  'Rwanda': { code: 'RW', flag: '🇷🇼' },
-  'Sao Tome and Principe': { code: 'ST', flag: '🇸🇹' },
-  'Senegal': { code: 'SN', flag: '🇸🇳' },
-  'Seychelles': { code: 'SC', flag: '🇸🇨' },
-  'Sierra Leone': { code: 'SL', flag: '🇸🇱' },
-  'Somalia': { code: 'SO', flag: '🇸🇴' },
-  'South Africa': { code: 'ZA', flag: '🇿🇦' },
-  'South Sudan': { code: 'SS', flag: '🇸🇸' },
-  'Sudan': { code: 'SD', flag: '🇸🇩' },
-  'Tanzania': { code: 'TZ', flag: '🇹🇿' },
-  'Togo': { code: 'TG', flag: '🇹🇬' },
-  'Tunisia': { code: 'TN', flag: '🇹🇳' },
-  'Uganda': { code: 'UG', flag: '🇺🇬' },
-  'Zambia': { code: 'ZM', flag: '🇿🇲' },
-  'Zimbabwe': { code: 'ZW', flag: '🇿🇼' },
-
-  // Oceania
-  'Australia': { code: 'AU', flag: '🇦🇺' },
-  'Fiji': { code: 'FJ', flag: '🇫🇯' },
-  'Kiribati': { code: 'KI', flag: '🇰🇮' },
-  'Marshall Islands': { code: 'MH', flag: '🇲🇭' },
-  'Micronesia': { code: 'FM', flag: '🇫🇲' },
-  'Nauru': { code: 'NR', flag: '🇳🇷' },
-  'New Zealand': { code: 'NZ', flag: '🇳🇿' },
-  'Palau': { code: 'PW', flag: '🇵🇼' },
-  'Papua New Guinea': { code: 'PG', flag: '🇵🇬' },
-  'Samoa': { code: 'WS', flag: '🇼🇸' },
-  'Solomon Islands': { code: 'SB', flag: '🇸🇧' },
-  'Tonga': { code: 'TO', flag: '🇹🇴' },
-  'Tuvalu': { code: 'TV', flag: '🇹🇻' },
-  'Vanuatu': { code: 'VU', flag: '🇻🇺' },
+// Reduced country mapping for better performance
+const COMMON_COUNTRIES: { [key: string]: string } = {
+  'United States': 'US', 'USA': 'US', 'US': 'US',
+  'United Kingdom': 'GB', 'UK': 'GB', 'England': 'GB',
+  'Germany': 'DE', 'France': 'FR', 'Japan': 'JP', 'China': 'CN',
+  'Thailand': 'TH', 'Singapore': 'SG', 'Malaysia': 'MY',
+  'Canada': 'CA', 'Australia': 'AU', 'India': 'IN', 'Brazil': 'BR',
 };
 
-// Country name aliases for different API responses
-const COUNTRY_ALIASES: { [key: string]: string } = {
-  'USA': 'United States',
-  'United States of America': 'United States',
-  'US': 'United States',
-  'UK': 'United Kingdom',
-  'Britain': 'United Kingdom',
-  'Great Britain': 'United Kingdom',
-  'England': 'United Kingdom',
-  'Scotland': 'United Kingdom',
-  'Wales': 'United Kingdom',
-  'Northern Ireland': 'United Kingdom',
-  'UAE': 'United Arab Emirates',
-  'South Korea': 'South Korea',
-  'North Korea': 'North Korea',
-  'Czech Republic': 'Czech Republic',
-  'Czechia': 'Czech Republic',
-  'Russia': 'Russia',
-  'Russian Federation': 'Russia',
-  'Congo': 'Congo',
-  'Democratic Republic of Congo': 'Democratic Republic of the Congo',
-  'DRC': 'Democratic Republic of the Congo',
-  'Congo-Brazzaville': 'Congo',
-  'Congo-Kinshasa': 'Democratic Republic of the Congo',
-  'Ivory Coast': 'Ivory Coast',
-  'Cote d\'Ivoire': 'Ivory Coast',
-  'Myanmar': 'Myanmar',
-  'Burma': 'Myanmar',
-  'Eswatini': 'Eswatini',
-  'Swaziland': 'Eswatini',
-  'North Macedonia': 'North Macedonia',
-  'Macedonia': 'North Macedonia',
-  'Vatican': 'Vatican City',
-  'Holy See': 'Vatican City',
-};
-
-// Function to normalize country name
-const normalizeCountryName = (countryName: string): string => {
-  // Check if there's an alias for this country name
-  const alias = COUNTRY_ALIASES[countryName];
-  if (alias) {
-    return alias;
-  }
-  
-  // Return original name if no alias found
-  return countryName;
-};
-
-// Function to get country code from country name
+// Utility functions for country handling
 const getCountryCode = (countryName: string): string => {
-  const normalizedName = normalizeCountryName(countryName);
-  const mapping = COUNTRY_MAPPINGS[normalizedName];
-  
-  if (mapping) {
-    return mapping.code;
-  }
-  
-  // Debug log for missing countries
-  console.log(`Country not found in mapping: "${countryName}" (normalized: "${normalizedName}")`);
-  return 'UN'; // Default to UN flag if country not found
+  const code = COMMON_COUNTRIES[countryName];
+  return code || 'UN'; // Default fallback
 };
 
-// Function to get country flag emoji
 const getCountryFlag = (countryName: string): string => {
-  const normalizedName = normalizeCountryName(countryName);
-  const mapping = COUNTRY_MAPPINGS[normalizedName];
+  const code = getCountryCode(countryName);
+  if (code === 'UN') return '🏳️';
   
-  if (mapping) {
-    return mapping.flag;
-  }
-  
-  // Debug log for missing countries
-  console.log(`Country flag not found: "${countryName}" (normalized: "${normalizedName}")`);
-  return '🏳️'; // Default to white flag if country not found
+  // Convert country code to flag emoji
+  return code
+    .split('')
+    .map(char => String.fromCodePoint(127397 + char.charCodeAt(0)))
+    .join('');
 };
 
 interface WeatherCardProps {
   city: string;
 }
 
-export default function WeatherCard({ city }: WeatherCardProps): React.JSX.Element {
+const WeatherCard = memo(function WeatherCard({ city }: WeatherCardProps): React.JSX.Element {
   const { isMobile, isTablet } = useBreakpoint();
-  const [weatherData, setWeatherData] = useState<WeatherApiResponse | null>(
-    null
-  );
+  const [weatherData, setWeatherData] = useState<WeatherApiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchWeather = async (): Promise<void> => {
-      try {
-        setLoading(true);
-        const data = await getCurrentWeather({ city });
-        setWeatherData(data);
-        setError(null);
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch weather data";
-        setError(errorMessage);
-        setWeatherData(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchWeather();
+  // Memoized fetch function to prevent unnecessary re-creations
+  const fetchWeather = useCallback(async (): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getCurrentWeather({ city });
+      setWeatherData(data);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch weather data";
+      setError(errorMessage);
+      setWeatherData(null);
+    } finally {
+      setLoading(false);
+    }
   }, [city]);
+
+  useEffect(() => {
+    fetchWeather();
+  }, [fetchWeather]);
 
   // Data for the 4 quick summary cards
   const quickSummaryCardsData: QuickSummaryCardData[] = useMemo(() => {
@@ -942,4 +682,6 @@ export default function WeatherCard({ city }: WeatherCardProps): React.JSX.Eleme
       </Box>
     </Box>
   );
-}
+});
+
+export default WeatherCard;

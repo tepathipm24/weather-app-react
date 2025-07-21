@@ -7,77 +7,60 @@ export const useMobileMenu = () => {
   const { isMobile } = useBreakpoint();
   const location = useLocation();
 
-  // Close menu when route changes
-  useEffect(() => {
-    if (isOpen) {
-      setIsOpen(false);
-    }
-  }, [location.pathname]);
+  // Optimized close function
+  const close = useCallback(() => setIsOpen(false), []);
 
-  // Close menu when screen size changes to desktop
-  useEffect(() => {
-    if (!isMobile && isOpen) {
-      setIsOpen(false);
-    }
-  }, [isMobile, isOpen]);
-
-  // Handle body scroll lock
-  useEffect(() => {
-    if (isOpen && isMobile) {
-      // Prevent body scroll when menu is open
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-    } else {
-      // Restore body scroll
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-    }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-    };
-  }, [isOpen, isMobile]);
-
-  const open = useCallback(() => {
-    if (isMobile) {
-      setIsOpen(true);
-    }
-  }, [isMobile]);
-
-  const close = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
+  // Optimized toggle function
   const toggle = useCallback(() => {
     if (isMobile) {
       setIsOpen(prev => !prev);
     }
   }, [isMobile]);
 
-  // Handle escape key
+  // Consolidated effect for menu state management
   useEffect(() => {
+    // Close menu when route changes or screen size changes to desktop
+    if (isOpen && !isMobile) {
+      setIsOpen(false);
+    }
+  }, [location.pathname, isMobile, isOpen]);
+
+  // Consolidated effect for body scroll lock and escape key handling
+  useEffect(() => {
+    if (!isOpen || !isMobile) return;
+
+    // Handle body scroll lock
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+
+    // Handle escape key
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+      if (event.key === 'Escape') {
         close();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [isOpen, close]);
+    document.addEventListener('keydown', handleEscape, { passive: true });
+
+    return () => {
+      // Restore body styles
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+      
+      // Remove event listener
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, isMobile, close]);
 
   return {
-    isOpen: isOpen && isMobile, // Only show as open on mobile
-    open,
+    isOpen: isOpen && isMobile,
     close,
     toggle,
-    isMobile,
   };
 };

@@ -54,7 +54,7 @@ interface TempCardProps {
 }
 
 const TempCard: React.FC<TempCardProps> = ({ city }) => {
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
   const [temperatureData, setTemperatureData] = useState<TemperatureData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,11 +80,10 @@ const TempCard: React.FC<TempCardProps> = ({ city }) => {
 
   const chartData = useMemo(() => {
     if (!temperatureData) return [];
-    return temperatureData.hourlyForecast.map((item, index) => ({
+    return temperatureData.hourlyForecast.map((item) => ({
       time: item.time,
       temp: item.temp,
       feelsLike: item.feelsLike,
-      index,
     }));
   }, [temperatureData]);
 

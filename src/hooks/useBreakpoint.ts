@@ -1,74 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export type Breakpoint = 'mobile' | 'tablet' | 'desktop';
 
-interface BreakpointConfig {
-  mobile: number;
-  tablet: number;
-  desktop: number;
-}
+// Optimized breakpoint constants
+const MOBILE_BREAKPOINT = 768;
+const DESKTOP_BREAKPOINT = 1024;
 
-const breakpoints: BreakpointConfig = {
-  mobile: 768,
-  tablet: 1024,
-  desktop: 1025,
+// Utility function to determine breakpoint
+const getBreakpoint = (width: number): Breakpoint => {
+  if (width < MOBILE_BREAKPOINT) return 'mobile';
+  if (width < DESKTOP_BREAKPOINT) return 'tablet';
+  return 'desktop';
 };
 
 export const useBreakpoint = () => {
   const [breakpoint, setBreakpoint] = useState<Breakpoint>(() => {
     if (typeof window === 'undefined') return 'desktop';
-    
-    const width = window.innerWidth;
-    if (width < breakpoints.mobile) return 'mobile';
-    if (width < breakpoints.desktop) return 'tablet';
-    return 'desktop';
+    return getBreakpoint(window.innerWidth);
   });
 
-  const [windowSize, setWindowSize] = useState(() => ({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
-    height: typeof window !== 'undefined' ? window.innerHeight : 768,
-  }));
+  // Memoized resize handler
+  const handleResize = useCallback(() => {
+    const newBreakpoint = getBreakpoint(window.innerWidth);
+    setBreakpoint(current => current !== newBreakpoint ? newBreakpoint : current);
+  }, []);
 
   useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      setWindowSize({ width, height });
-      
-      if (width < breakpoints.mobile) {
-        setBreakpoint('mobile');
-      } else if (width < breakpoints.desktop) {
-        setBreakpoint('tablet');
-      } else {
-        setBreakpoint('desktop');
-      }
-    };
-
-    // Debounce resize events for performance
+    // Debounced resize handler for better performance
     let timeoutId: number;
     const debouncedResize = () => {
       clearTimeout(timeoutId);
-      timeoutId = window.setTimeout(handleResize, 150);
+      timeoutId = window.setTimeout(handleResize, 100);
     };
 
-    window.addEventListener('resize', debouncedResize);
+    window.addEventListener('resize', debouncedResize, { passive: true });
     
-    // Initial call
-    handleResize();
-
     return () => {
       window.removeEventListener('resize', debouncedResize);
       clearTimeout(timeoutId);
     };
-  }, []);
+  }, [handleResize]);
 
+  // Memoized return values to prevent unnecessary re-renders
   return {
     breakpoint,
-    windowSize,
     isMobile: breakpoint === 'mobile',
     isTablet: breakpoint === 'tablet',
     isDesktop: breakpoint === 'desktop',
-    isMobileOrTablet: breakpoint === 'mobile' || breakpoint === 'tablet',
   };
 };

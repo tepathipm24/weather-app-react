@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Card, Typography, CircularProgress, Alert, Chip } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PolarAngleAxis, PolarGrid, PolarRadiusAxis, RadialBarChart, RadialBar } from 'recharts';
-import AirIcon from '@mui/icons-material/Air';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ExploreIcon from '@mui/icons-material/Explore';
 import SpeedIcon from '@mui/icons-material/Speed';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -91,7 +90,7 @@ interface WindCardProps {
 }
 
 const WindCard: React.FC<WindCardProps> = ({ city }) => {
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
   const [windData, setWindData] = useState<WindData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,12 +116,11 @@ const WindCard: React.FC<WindCardProps> = ({ city }) => {
 
   const chartData = useMemo(() => {
     if (!windData) return [];
-    return windData.hourlyForecast.map((item, index) => ({
+    return windData.hourlyForecast.map((item) => ({
       time: item.time,
       speed: item.speed,
       direction: item.direction,
       degree: item.degree,
-      index,
     }));
   }, [windData]);
 
@@ -275,9 +273,9 @@ const WindCard: React.FC<WindCardProps> = ({ city }) => {
                   tick={{ fontSize: isMobile ? 10 : 12 }}
                   domain={[0, 'dataMax + 5']}
                 />
-                <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    `${value} km/h`, 
+                <Tooltip
+                  formatter={(value: number) => [
+                    `${value} km/h`,
                     'ความเร็วลม'
                   ]}
                   labelFormatter={(label: string) => `เวลา: ${label}`}
